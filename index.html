@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1723">
+  <meta name="description" content="Explore a head-on collision with Pat's impact-force calculator. Change mass, speed, restitution, impact time, and deformation to see what the estimates mean.">
+  <title>Pat's Impact Force Calculator</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230b1723'/%3E%3Cpath d='M10 32h18m-7-7 7 7-7 7m33-7H36m7-7-7 7 7 7' fill='none' stroke='%23f4ba68' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#calculator">Skip to calculator</a>
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">↔</span><span>Pat's <strong>Impact Lab</strong></span></div>
+    <a href="#understand" class="header-link">How this works <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="intro wrap" aria-labelledby="page-title">
+      <div class="eyebrow"><span class="eyebrow-line"></span> COLLISION EXPLORER <span class="version">01 / HEAD-ON</span></div>
+      <h1 id="page-title">What happens when <em>two camels collide?</em></h1>
+      <p>Start with two adult dromedaries running toward each other. Change any number to explore the physics behind a head-on impact.</p>
+    </section>
+
+    <section class="workspace wrap" id="calculator" aria-label="Impact force calculator">
+      <div class="controls-panel">
+        <div class="panel-heading"><div><span class="section-kicker">01 / INPUTS</span><h2>Build your collision</h2></div><button class="text-button" id="reset-button" type="button">Reset defaults</button></div>
+        <p class="direction-note"><span aria-hidden="true">→ ←</span> Both speeds are toward the point of impact.</p>
+        <div class="object-grid">
+          <fieldset class="object-card"><legend><span class="object-index">A</span> Camel one <span class="motion-arrow" aria-hidden="true">→</span></legend>
+            <label for="mass-a">Mass <span>kg</span></label><input id="mass-a" name="massA" type="number" min="0.001" max="1000000000" step="any" inputmode="decimal" value="450" required>
+            <label for="speed-a">Speed toward impact <span>mph</span></label><input id="speed-a" name="speedA" type="number" min="0" max="1000000" step="any" inputmode="decimal" value="23.7" required>
+          </fieldset>
+          <fieldset class="object-card"><legend><span class="object-index">B</span> Camel two <span class="motion-arrow left" aria-hidden="true">←</span></legend>
+            <label for="mass-b">Mass <span>kg</span></label><input id="mass-b" name="massB" type="number" min="0.001" max="1000000000" step="any" inputmode="decimal" value="450" required>
+            <label for="speed-b">Speed toward impact <span>mph</span></label><input id="speed-b" name="speedB" type="number" min="0" max="1000000" step="any" inputmode="decimal" value="23.7" required>
+          </fieldset>
+        </div>
+        <div class="advanced-heading"><span class="section-kicker">COLLISION CONDITIONS</span><span class="hint">These change the force estimate</span></div>
+        <div class="condition-grid">
+          <div class="field"><label for="restitution">Restitution <span>0–1</span></label><input id="restitution" name="restitution" type="number" min="0" max="1" step="0.01" inputmode="decimal" value="0.2" required><small>0 = no rebound; 1 = ideal elastic rebound</small></div>
+          <div class="field"><label for="duration">Impact duration <span>seconds</span></label><input id="duration" name="duration" type="number" min="0.000001" max="1000000" step="any" inputmode="decimal" value="0.15" required><small>Used for average force during contact</small></div>
+          <div class="field"><label for="deformation">Total compression <span>meters</span></label><input id="deformation" name="deformation" type="number" min="0.000001" max="1000000" step="any" inputmode="decimal" value="0.4" required><small>Combined deformation of both objects</small></div>
+        </div>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </div>
+
+      <div class="results-panel" aria-labelledby="results-title">
+        <div class="results-top"><span class="section-kicker">02 / RESULTS</span><span class="live-badge"><span></span> LIVE ESTIMATE</span></div>
+        <h2 id="results-title">The moment of impact</h2>
+        <div class="collision-visual" role="img" aria-label="Camel one moves right toward the collision point; camel two moves left toward it.">
+          <div class="visual-track"><div class="moving-object"><span class="visual-label">CAMEL A</span><span class="visual-disc">A</span><span class="visual-velocity" id="visual-a">23.7 mph →</span></div><div class="impact-symbol" aria-hidden="true">✳</div><div class="moving-object right"><span class="visual-label">CAMEL B</span><span class="visual-disc">B</span><span class="visual-velocity" id="visual-b">← 23.7 mph</span></div></div>
+          <div class="track-caption"><span>BEFORE IMPACT</span><span>HEAD-ON / ONE DIMENSION</span></div>
+        </div>
+        <div class="hero-result"><div><span class="result-label">AVERAGE CONTACT FORCE <button class="info" type="button" aria-label="Average contact force equals impulse divided by contact time" title="Impulse divided by contact time">i</button></span><div class="result-number"><output id="force-duration">—</output><span>N</span></div><p>On either camel, over the entered impact duration.</p></div><span class="hero-glyph" aria-hidden="true">↔</span></div>
+        <div class="result-two"><div><span class="result-label">CLOSING SPEED</span><strong><output id="closing-speed">—</output> <small>mph</small></strong><span class="result-detail">Combined approach speed</span></div><div><span class="result-label">COMPRESSION ESTIMATE</span><strong><output id="force-distance">—</output> <small>N</small></strong><span class="result-detail">From relative energy ÷ distance</span></div></div>
+        <div class="caution"><span class="caution-icon" aria-hidden="true">!</span><p><strong>Average is not peak.</strong> Peak force can be much higher or lower than either estimate, depending on how force changes during contact. These two methods answer different questions and need not agree.</p></div>
+      </div>
+    </section>
+
+    <section class="detail-section wrap" aria-labelledby="details-title">
+      <div class="section-heading"><div><span class="section-kicker">03 / THE PHYSICS</span><h2 id="details-title">Inside the numbers</h2></div><p>One-dimensional, isolated collision model. Positive velocity points from camel A toward camel B.</p></div>
+      <div class="metric-grid">
+        <article class="metric"><span class="metric-icon" aria-hidden="true">↗</span><h3>Final velocity · A</h3><strong><output id="final-a">—</output> <small>mph</small></strong><p id="final-a-direction">—</p></article>
+        <article class="metric"><span class="metric-icon" aria-hidden="true">↖</span><h3>Final velocity · B</h3><strong><output id="final-b">—</output> <small>mph</small></strong><p id="final-b-direction">—</p></article>
+        <article class="metric"><span class="metric-icon" aria-hidden="true">⇄</span><h3>Impulse on each</h3><strong><output id="impulse">—</output> <small>N·s</small></strong><p>Equal magnitude, opposite directions.</p></article>
+        <article class="metric"><span class="metric-icon" aria-hidden="true">◈</span><h3>Initial kinetic energy</h3><strong><output id="initial-energy">—</output> <small>J</small></strong><p>Combined energy before impact.</p></article>
+        <article class="metric"><span class="metric-icon" aria-hidden="true">◌</span><h3>Final kinetic energy</h3><strong><output id="final-energy">—</output> <small>J</small></strong><p>Combined energy after impact.</p></article>
+        <article class="metric accent"><span class="metric-icon" aria-hidden="true">✳</span><h3>Energy dissipated</h3><strong><output id="energy-lost">—</output> <small>J</small></strong><p>Converted to deformation, heat, sound, and other forms in this model.</p></article>
+      </div>
+    </section>
+
+    <section class="explainer wrap" id="understand" aria-labelledby="explain-title">
+      <div class="explainer-lead"><span class="section-kicker">04 / READ THE RESULT</span><h2 id="explain-title">Why speed and mass aren't enough</h2><p>Force depends on how quickly momentum changes. The same two camels could experience very different average forces if the collision lasts a different amount of time.</p><button id="copy-summary" class="copy-button" type="button">Copy shareable summary <span aria-hidden="true">↗</span></button><p class="copy-status" id="copy-status" role="status" aria-live="polite"></p></div>
+      <div class="explain-cards"><article><span>01</span><h3>Contact time changes force</h3><p>Impulse is the change in momentum. Divide it by contact time to estimate the average contact force during the full collision.</p><div class="formula">F<sub>avg</sub> ≈ impulse ÷ time</div></article><article><span>02</span><h3>Compression gives another view</h3><p>Relative motion energy divided by total compression estimates the average force during the stopping or compression phase. It does not include the full rebound phase.</p><div class="formula">F<sub>compression</sub> ≈ relative energy ÷ distance</div></article><article><span>03</span><h3>Peak force remains unknown</h3><p>Neither average reveals the instant of greatest force. You would need a force-time curve, material behavior, or measurements to estimate a peak reliably.</p></article></div>
+    </section>
+
+    <aside class="disclaimer wrap" aria-labelledby="disclaimer-title"><div class="disclaimer-mark" aria-hidden="true">i</div><div><h2 id="disclaimer-title">An educational model, not a safety rating</h2><p>This calculator treats camels as point masses in a straight-line collision. Real impacts involve body shape, rotation, uneven contact, changing force, and complex tissue or material behavior. Default masses and collision conditions are illustrative; the 23.7 mph speed is a racing-speed example, not a universal camel average. Do not use these numbers to assess injury risk, design protective equipment, or make safety decisions.</p></div></aside>
+  </main>
+  <footer class="site-footer wrap"><div class="brand"><span class="brand-mark" aria-hidden="true">↔</span><span>Pat's <strong>Impact Lab</strong></span></div><div class="footer-links"><a href="https://openstax.org/books/college-physics-2e/pages/8-5-inelastic-collisions-in-one-dimension" target="_blank" rel="noopener noreferrer">Collision physics ↗</a><a href="https://mechref.engr.illinois.edu/dyn/rec.html" target="_blank" rel="noopener noreferrer">Impulse &amp; restitution ↗</a></div><span>Made for curious minds.</span></footer>
+</body>
+</html>
