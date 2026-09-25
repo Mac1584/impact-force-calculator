@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const MPH_TO_MS = 0.44704;
+  const KMH_TO_MS = 1 / 3.6;
   const STANDARD_GRAVITY = 9.80665;
   const fields = Object.fromEntries([...document.querySelectorAll('input[name]')].map(input => [input.name, input]));
   // HTML's value attributes are the single source of truth for the starting scenario.
@@ -12,7 +12,7 @@
     restitution: 'Restitution must be between 0 and 1.',
     duration: 'Impact duration must be greater than zero.', deformation: 'Total compression must be greater than zero.'
   };
-  const outputs = Object.fromEntries(['force-duration', 'weight-equivalent', 'closing-speed', 'force-distance', 'final-a', 'final-b', 'impulse', 'initial-energy', 'final-energy', 'energy-lost'].map(id => [id, document.getElementById(id)]));
+  const outputs = Object.fromEntries(['force-duration', 'weight-equivalent', 'closing-speed', 'force-distance', 'net-velocity', 'impulse', 'initial-energy', 'final-energy', 'energy-lost'].map(id => [id, document.getElementById(id)]));
   const error = document.getElementById('form-error');
   const copyStatus = document.getElementById('copy-status');
   let current = null;
@@ -21,6 +21,11 @@
     if (!Number.isFinite(value)) return '—';
     if (Math.abs(value) >= 1e9) return value.toExponential(2);
     return new Intl.NumberFormat('en-US', { maximumFractionDigits }).format(value);
+  }
+
+  function formatSigned(value, digits = 3) {
+    if (Math.abs(value) < 0.0005) return '0';
+    return `${value > 0 ? '+' : ''}${format(value, digits)}`;
   }
 
   function validate(values) {
@@ -39,28 +44,30 @@
 
   function calculate(v) {
     // Right is positive: A approaches from the left, B from the right.
-    const uA = v.speedA * MPH_TO_MS;
-    const uB = -v.speedB * MPH_TO_MS;
+    const uA = v.speedA * KMH_TO_MS;
+    const uB = -v.speedB * KMH_TO_MS;
     const closing = uA - uB;
     // Momentum conservation and restitution give J = μ(1 + e)(uA - uB).
     const reducedMass = v.massA * v.massB / (v.massA + v.massB);
     const impulse = reducedMass * (1 + v.restitution) * closing;
     const finalA = uA - impulse / v.massA;
     const finalB = uB + impulse / v.massB;
+    // The system's center-of-mass velocity is the one signed net velocity.
+    const netFinalVelocity = (v.massA * finalA + v.massB * finalB) / (v.massA + v.massB);
     const initialEnergy = 0.5 * v.massA * uA ** 2 + 0.5 * v.massB * uB ** 2;
     const finalEnergy = 0.5 * v.massA * finalA ** 2 + 0.5 * v.massB * finalB ** 2;
     // Distance estimates average force during compression, before any rebound.
     const relativeEnergy = 0.5 * reducedMass * closing ** 2;
     return {
-      closingMph: v.speedA + v.speedB, finalAMph: finalA / MPH_TO_MS, finalBMph: finalB / MPH_TO_MS,
+      closingKmh: v.speedA + v.speedB, netFinalKmh: netFinalVelocity / KMH_TO_MS,
       impulse, initialEnergy, finalEnergy, energyLost: Math.max(0, initialEnergy - finalEnergy),
       forceDuration: impulse / v.duration, forceDistance: relativeEnergy / v.deformation
     };
   }
 
-  function direction(value) {
-    if (Math.abs(value) < 0.005) return 'Approximately stationary after impact';
-    return value > 0 ? 'Moving right after impact' : 'Moving left after impact';
+  function netDirection(value) {
+    if (Math.abs(value) < 0.0005) return 'Zero: no net motion from the impact point.';
+    return value > 0 ? 'Positive: net motion toward Camel B.' : 'Negative: net motion toward Camel A.';
   }
 
   function render() {
@@ -79,18 +86,16 @@
     current = { values, result };
     outputs['force-duration'].textContent = format(result.forceDuration, 0);
     outputs['weight-equivalent'].textContent = format(result.forceDuration / (1000 * STANDARD_GRAVITY), 2);
-    outputs['closing-speed'].textContent = format(result.closingMph);
+    outputs['closing-speed'].textContent = format(result.closingKmh);
     outputs['force-distance'].textContent = format(result.forceDistance, 0);
-    outputs['final-a'].textContent = format(result.finalAMph, 2);
-    outputs['final-b'].textContent = format(result.finalBMph, 2);
+    outputs['net-velocity'].textContent = formatSigned(result.netFinalKmh);
     outputs.impulse.textContent = format(result.impulse, 0);
     outputs['initial-energy'].textContent = format(result.initialEnergy, 0);
     outputs['final-energy'].textContent = format(result.finalEnergy, 0);
     outputs['energy-lost'].textContent = format(result.energyLost, 0);
-    document.getElementById('final-a-direction').textContent = direction(result.finalAMph);
-    document.getElementById('final-b-direction').textContent = direction(result.finalBMph);
-    document.getElementById('visual-a').textContent = `${format(values.speedA)} mph →`;
-    document.getElementById('visual-b').textContent = `← ${format(values.speedB)} mph`;
+    document.getElementById('net-direction').textContent = netDirection(result.netFinalKmh);
+    document.getElementById('visual-a').textContent = `${format(values.speedA)} km/h →`;
+    document.getElementById('visual-b').textContent = `← ${format(values.speedB)} km/h`;
     copyStatus.textContent = '';
   }
 
@@ -98,13 +103,13 @@
     const { values: v, result: r } = current;
     const lines = [
       "Pat's Impact Force Calculator — head-on collision estimate",
-      `Camel A: ${format(v.massA)} kg at ${format(v.speedA)} mph toward impact; Camel B: ${format(v.massB)} kg at ${format(v.speedB)} mph toward impact.`,
+      `Camel A: ${format(v.massA)} kg at ${format(v.speedA)} km/h toward impact; Camel B: ${format(v.massB)} kg at ${format(v.speedB)} km/h toward impact.`,
       `Restitution: ${v.restitution}; contact time: ${v.duration} s; combined compression: ${v.deformation} m.`,
-      `Closing speed: ${format(r.closingMph)} mph. Final velocities: A ${format(r.finalAMph, 2)} mph, B ${format(r.finalBMph, 2)} mph (positive is toward B).`,
+      `Closing speed: ${format(r.closingKmh)} km/h. Net final velocity of the center of mass: ${formatSigned(r.netFinalKmh)} km/h (negative toward A, positive toward B; zero at the impact point).`,
       `Impulse on each: ${format(r.impulse, 0)} N·s. Initial kinetic energy: ${format(r.initialEnergy, 0)} J; final: ${format(r.finalEnergy, 0)} J; dissipated: ${format(r.energyLost, 0)} J.`,
       `Average contact force from time: ${format(r.forceDuration, 0)} N. Compression-phase force estimate from distance: ${format(r.forceDistance, 0)} N. Peak force is unknown.`,
       `For scale, the average contact force matches the weight of about ${format(r.forceDuration / (1000 * STANDARD_GRAVITY), 2)} metric tonnes at standard Earth gravity; this is only a force-magnitude comparison.`,
-      'Educational one-dimensional model only; not for injury, equipment, or safety decisions.'
+      'Educational one-dimensional model only; not for injury, equipment, or safety decisions. Consult a professional engineer.'
     ];
     if (location.protocol === 'http:' || location.protocol === 'https:') {
       const link = new URL(location.href);
@@ -159,7 +164,7 @@
             throw new Error(problem.message);
           }
           render();
-          return { closingSpeedMph: current.result.closingMph, averageContactForceN: current.result.forceDuration, compressionEstimateN: current.result.forceDistance };
+          return { closingSpeedKmh: current.result.closingKmh, netFinalVelocityKmh: current.result.netFinalKmh, averageContactForceN: current.result.forceDuration, compressionEstimateN: current.result.forceDistance };
         }
       })).catch(() => {});
     } catch (_) { /* The calculator still works in browsers without WebMCP. */ }
