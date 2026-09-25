@@ -2,10 +2,17 @@
   'use strict';
 
   const MPH_TO_MS = 0.44704;
-  const defaults = { massA: 450, speedA: 23.7, massB: 450, speedB: 23.7, restitution: 0.2, duration: 0.15, deformation: 0.4 };
-  const ids = { massA: 'mass-a', speedA: 'speed-a', massB: 'mass-b', speedB: 'speed-b', restitution: 'restitution', duration: 'duration', deformation: 'deformation' };
-  const fields = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, document.getElementById(id)]));
-  const outputs = Object.fromEntries(['force-duration', 'closing-speed', 'force-distance', 'final-a', 'final-b', 'impulse', 'initial-energy', 'final-energy', 'energy-lost'].map(id => [id, document.getElementById(id)]));
+  const STANDARD_GRAVITY = 9.80665;
+  const fields = Object.fromEntries([...document.querySelectorAll('input[name]')].map(input => [input.name, input]));
+  // HTML's value attributes are the single source of truth for the starting scenario.
+  const defaults = Object.fromEntries(Object.entries(fields).map(([key, input]) => [key, Number(input.defaultValue)]));
+  const validationMessages = {
+    massA: 'Camel A mass must be greater than zero.', massB: 'Camel B mass must be greater than zero.',
+    speedA: 'Camel A speed cannot be negative.', speedB: 'Camel B speed cannot be negative.',
+    restitution: 'Restitution must be between 0 and 1.',
+    duration: 'Impact duration must be greater than zero.', deformation: 'Total compression must be greater than zero.'
+  };
+  const outputs = Object.fromEntries(['force-duration', 'weight-equivalent', 'closing-speed', 'force-distance', 'final-a', 'final-b', 'impulse', 'initial-energy', 'final-energy', 'energy-lost'].map(id => [id, document.getElementById(id)]));
   const error = document.getElementById('form-error');
   const copyStatus = document.getElementById('copy-status');
   let current = null;
@@ -17,34 +24,32 @@
   }
 
   function validate(values) {
-    const rules = [
-      ['massA', 'Camel A mass must be greater than zero.'], ['massB', 'Camel B mass must be greater than zero.'],
-      ['speedA', 'Camel A speed cannot be negative.'], ['speedB', 'Camel B speed cannot be negative.'],
-      ['restitution', 'Restitution must be between 0 and 1.'],
-      ['duration', 'Impact duration must be greater than zero.'], ['deformation', 'Total compression must be greater than zero.']
-    ];
-    for (const [key, message] of rules) {
-      const value = values[key];
-      const input = fields[key];
-      if (!Number.isFinite(value) || input.value.trim() === '' || !input.checkValidity() ||
-          ((key === 'massA' || key === 'massB' || key === 'duration' || key === 'deformation') && value <= 0) ||
-          ((key === 'speedA' || key === 'speedB') && value < 0) ||
-          (key === 'restitution' && (value < 0 || value > 1))) return { key, message };
+    for (const [key, input] of Object.entries(fields)) {
+      // The input's required/min/max attributes hold the numeric limits.
+      if (!input.value || !Number.isFinite(values[key]) || !input.checkValidity()) {
+        return { key, message: validationMessages[key] };
+      }
     }
     return null;
   }
 
+  function readValues() {
+    return Object.fromEntries(Object.entries(fields).map(([key, input]) => [key, Number(input.value)]));
+  }
+
   function calculate(v) {
+    // Right is positive: A approaches from the left, B from the right.
     const uA = v.speedA * MPH_TO_MS;
     const uB = -v.speedB * MPH_TO_MS;
     const closing = uA - uB;
-    const totalMass = v.massA + v.massB;
-    const reducedMass = v.massA * v.massB / totalMass;
+    // Momentum conservation and restitution give J = μ(1 + e)(uA - uB).
+    const reducedMass = v.massA * v.massB / (v.massA + v.massB);
     const impulse = reducedMass * (1 + v.restitution) * closing;
     const finalA = uA - impulse / v.massA;
     const finalB = uB + impulse / v.massB;
     const initialEnergy = 0.5 * v.massA * uA ** 2 + 0.5 * v.massB * uB ** 2;
     const finalEnergy = 0.5 * v.massA * finalA ** 2 + 0.5 * v.massB * finalB ** 2;
+    // Distance estimates average force during compression, before any rebound.
     const relativeEnergy = 0.5 * reducedMass * closing ** 2;
     return {
       closingMph: v.speedA + v.speedB, finalAMph: finalA / MPH_TO_MS, finalBMph: finalB / MPH_TO_MS,
@@ -59,7 +64,7 @@
   }
 
   function render() {
-    const values = Object.fromEntries(Object.entries(fields).map(([key, input]) => [key, Number(input.value)]));
+    const values = readValues();
     const problem = validate(values);
     for (const [key, input] of Object.entries(fields)) input.setAttribute('aria-invalid', String(problem?.key === key));
     error.hidden = !problem;
@@ -73,6 +78,7 @@
     const result = calculate(values);
     current = { values, result };
     outputs['force-duration'].textContent = format(result.forceDuration, 0);
+    outputs['weight-equivalent'].textContent = format(result.forceDuration / (1000 * STANDARD_GRAVITY), 2);
     outputs['closing-speed'].textContent = format(result.closingMph);
     outputs['force-distance'].textContent = format(result.forceDistance, 0);
     outputs['final-a'].textContent = format(result.finalAMph, 2);
@@ -91,12 +97,13 @@
   function summary() {
     const { values: v, result: r } = current;
     const lines = [
-      "Pat's Impact Lab — head-on collision estimate",
+      "Pat's Impact Force Calculator — head-on collision estimate",
       `Camel A: ${format(v.massA)} kg at ${format(v.speedA)} mph toward impact; Camel B: ${format(v.massB)} kg at ${format(v.speedB)} mph toward impact.`,
       `Restitution: ${v.restitution}; contact time: ${v.duration} s; combined compression: ${v.deformation} m.`,
       `Closing speed: ${format(r.closingMph)} mph. Final velocities: A ${format(r.finalAMph, 2)} mph, B ${format(r.finalBMph, 2)} mph (positive is toward B).`,
       `Impulse on each: ${format(r.impulse, 0)} N·s. Initial kinetic energy: ${format(r.initialEnergy, 0)} J; final: ${format(r.finalEnergy, 0)} J; dissipated: ${format(r.energyLost, 0)} J.`,
       `Average contact force from time: ${format(r.forceDuration, 0)} N. Compression-phase force estimate from distance: ${format(r.forceDistance, 0)} N. Peak force is unknown.`,
+      `For scale, the average contact force matches the weight of about ${format(r.forceDuration / (1000 * STANDARD_GRAVITY), 2)} metric tonnes at standard Earth gravity; this is only a force-magnitude comparison.`,
       'Educational one-dimensional model only; not for injury, equipment, or safety decisions.'
     ];
     if (location.protocol === 'http:' || location.protocol === 'https:') {
@@ -146,8 +153,7 @@
           if (!input || typeof input !== 'object' || Object.keys(defaults).some(key => typeof input[key] !== 'number' || !Number.isFinite(input[key]))) throw new Error('All seven inputs must be finite numbers.');
           const previous = Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, field.value]));
           for (const key of Object.keys(defaults)) fields[key].value = input[key];
-          const values = Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, Number(field.value)]));
-          const problem = validate(values);
+          const problem = validate(readValues());
           if (problem) {
             for (const key of Object.keys(defaults)) fields[key].value = previous[key];
             throw new Error(problem.message);
