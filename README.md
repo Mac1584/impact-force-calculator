@@ -1,52 +1,31 @@
-# Pat's Impact Force Calculator
+# Camel Collision Calculator v2.01
 
-A responsive, self-contained static website. Open `index.html` locally or upload all files in this folder to a static host. No build step or API key is required.
+Waypoint Utility Web edition · **STATUS: STABLE**
 
-The page uses a stripped-down early-web style. The average-force result includes Earth-weight benchmarks for 1-, 5-, and 10-tonne loads. These compare force magnitudes only, not collision outcomes.
+A complete, responsive static site for GitHub Pages. No build step, API key, or external assets are required. Open `index.html` directly for local use; clipboard copying is most reliable on the published HTTPS site or a local web server.
 
-## Publish
+## Files
 
-### GitHub Pages
+- `index.html` — calculator controls, results, explanatory formulas, sources, version, and status.
+- `script.js` — the original calculator behavior, preserved without changes.
+- `waypoint.css` — the shared Waypoint Utility Web theme.
+- `styles.css` — this calculator's responsive layout.
+- `camel.svg` — the local line-art collision diagram.
+- `.nojekyll` — tells GitHub Pages to serve this static site directly.
 
-You can do this entirely in your browser; no Git software or terminal is needed.
+## Upload to GitHub Pages
 
-1. Sign in to [GitHub](https://github.com). Click the **+** menu in the upper-right corner and choose **New repository**.
-2. Set the repository name to `impact-force-calculator`. Select **Public** (required for GitHub Pages on a free personal account). Turn **Add a README file** on, then click **Create repository**.
-3. On the repository's **Code** tab, click **Add file → Upload files**. Upload `index.html`, `styles.css`, and `script.js` from this folder. Upload the *files themselves*, not the ZIP archive or enclosing folder. They should appear beside GitHub's `README.md` at the top level.
-4. Enter a message such as `Add impact force calculator` and click **Commit changes**. If GitHub offers a choice, choose to commit directly to `main`.
-5. Open **Settings → Pages**. In **Build and deployment**, set **Source** to **Deploy from a branch**. Select `main` as the branch and `/ (root)` as the folder, then click **Save**.
-6. Wait a few minutes, refresh **Settings → Pages**, and click **Visit site**. With your username, the expected address is `https://mac1584.github.io/impact-force-calculator/`.
+1. Extract the ZIP. In your `impact-force-calculator` repository, choose **Add file → Upload files**.
+2. Upload the extracted files into the repository's top level, including `index.html`, both CSS files, `script.js`, and `camel.svg`. Upload the files themselves, not the ZIP or an enclosing folder. Commit the upload.
+3. In **Settings → Pages**, choose **Deploy from a branch**, then `main` and **/ (root)**. Save and use the **Visit site** link when publication finishes.
+4. Future updates use the same filenames and location.
 
-If the site shows a 404 page, check that `index.html` is at the top level of the repository and that Pages is set to `main` and `/ (root)`. GitHub says publishing changes may take up to 10 minutes.
+## Preserved behavior
 
-### Update an existing GitHub Pages site
+The seven live inputs, numeric validation, reset, shareable summary and parameter links, force/energy/momentum outputs, Earth-weight benchmarks, and optional WebMCP `configure_collision` integration are retained. Defaults remain 450 kg at 5.8 km/h and 550 kg at 5.3 km/h, restitution 0.2, duration 0.15 s, and compression 0.4 m.
 
-In your `impact-force-calculator` repository, use **Add file → Upload files** to upload the updated `index.html`, `styles.css`, and `script.js` from this folder. Keep the filenames exactly the same and commit the change to `main`. GitHub Pages republishes automatically. If the upload page does not offer to replace an existing file, use the file's pencil-shaped **Edit** button on GitHub, paste in the updated contents, and commit each file.
+The model is an isolated, one-dimensional collision. Average contact force is impulse divided by contact time; the compression estimate is relative-motion energy divided by compression distance. Neither predicts peak force. The site retains the original educational-use explanation.
 
-### Netflify
+## Source and verification
 
-Drag this folder onto [Netlify Drop](https://app.netlify.com/drop). Netlify will give you a public URL. You can also import the GitHub repository and set the publish directory to the repository root; no build command is needed.
-
-### Vercel
-
-Import the GitHub repository at [Vercel](https://vercel.com/new). Select **Other** as the framework preset if asked. Leave the build command blank and set the output directory to `.` (the repository root), then deploy.
-
-## What the calculator assumes
-
-The calculation models a one-dimensional, isolated, head-on collision. It uses conservation of momentum and a coefficient of restitution between 0 and 1. Speeds entered for both camels are toward each other; positive final velocity points from camel A toward camel B.
-
-The full-contact average force is the impulse magnitude divided by impact duration. The deformation estimate is initial *relative-motion* kinetic energy divided by the combined compression distance, representing the average compression-phase force under a simplified work-energy model. Neither estimate predicts peak force. Real impacts require material behavior, geometry, a force-time profile, or measurement for a defensible peak-force or safety assessment.
-
-Both camels start at 12.5 mph, as requested. This speed and the default masses, restitution, contact time, and compression distance are illustrative and editable; they are not universal camel measurements.
-
-## Editing the calculator
-
-- `index.html` contains the labels, explanatory text, and starting input values. To change a default, edit its input's `value` attribute. **Reset defaults** reads those same values.
-- `script.js` contains validation, `calculate()` for the physics, `render()` for the visible results, and the shareable summary. Short comments explain the less obvious physics assumptions.
-- `styles.css` controls the early-web appearance and mobile layout.
-
-## References
-
-- [OpenStax: Inelastic collisions in one dimension](https://openstax.org/books/college-physics-2e/pages/8-5-inelastic-collisions-in-one-dimension)
-- [University of Illinois Mechanics Reference: Momentum, impulse, and collisions](https://mechref.engr.illinois.edu/dyn/rec.html)
-- [NIST: standard gravity and force conversions](https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b8)
+Based on [Mac1584/impact-force-calculator](https://github.com/Mac1584/impact-force-calculator), branch `main`. This edition changes presentation and local diagram assets; `script.js` is byte-for-byte unchanged. Checked locally against the original for defaults, changed inputs, elastic and stationary scenarios, invalid-input handling, reset, query restoration, summary copying, keyboard access, and mobile layout.

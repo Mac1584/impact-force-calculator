@@ -3,29 +3,33 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#000080">
+  <meta name="theme-color" content="#193b58">
   <meta name="description" content="Explore a head-on collision with Pat's impact-force calculator. Change mass, speed, restitution, impact time, and deformation to see what the estimates mean.">
-  <title>Pat's Impact Force Calculator</title>
+  <title>Camel Collision Calculator v2.01 | Waypoint Utility Web</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000080'/%3E%3Cpath d='M8 32h20m-7-7 7 7-7 7m35-7H36m7-7-7 7 7 7' fill='none' stroke='white' stroke-width='5' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="waypoint.css">
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#calculator">Skip to calculator</a>
-  <header class="site-header">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">↔</span><span>Camel <strong>Collision Calculator</strong></span></div>
-    <a href="#understand" class="header-link">How this works <span aria-hidden="true">↗</span></a>
+  <a class="wuw-skip" href="#calculator">Skip to calculator</a>
+  <header class="wuw-header">
+    <div class="wuw-header-inner">
+      <div><div class="wuw-brand"><svg class="wuw-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10h6M5 6l4 4-4 4m13-4h-6m3-4-4 4 4 4"/></svg> WAYPOINT UTILITY WEB</div><h1 class="wuw-title">Camel Collision Calculator</h1><p class="wuw-subtitle">Head-on impact / one-dimensional collision model</p></div>
+      <div class="wuw-meta"><span>VERSION <strong>2.01</strong></span><span class="wuw-status">STATUS <strong>STABLE</strong></span></div>
+    </div>
   </header>
+  <nav class="wuw-nav" aria-label="Primary navigation"><div><a href="#calculator" aria-current="page">Calculator</a><a href="#details">Results detail</a><a href="#understand">Method</a><a href="#sources">Sources</a></div><span class="wuw-nav-divider" aria-hidden="true"></span><a href="https://mac1584.github.io/Delay_Calc/">Video Delay</a><a href="https://mac1584.github.io/tower-horizon/">Tower Horizon</a></nav>
   <main>
     <section class="intro wrap" aria-labelledby="page-title">
-      <div class="eyebrow"><span class="eyebrow-line"></span> COLLISION EXPLORER <span class="version">01 / HEAD-ON</span></div>
-      <h1 id="page-title">Calculate the force generated in <em>head on collisions</em></h1>
+      <div class="eyebrow"><span class="eyebrow-line"></span> ENGINEERING TOOLS <span class="version">COLLISION / HEAD-ON</span></div>
+      <h2 id="page-title">Explore a head-on collision</h2>
       <p>Start with two adult dromedaries moving toward each other. Change any number to explore the physics behind a head-on impact.</p>
     </section>
 
     <section class="workspace wrap" id="calculator" aria-label="Impact force calculator">
       <div class="controls-panel">
-        <div class="panel-heading"><div><span class="section-kicker">01 / INPUTS</span><h2>Build your collision</h2></div><button class="text-button" id="reset-button" type="button">Reset defaults</button></div>
+        <div class="panel-heading"><div><span class="section-kicker"><svg class="utility-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14M7 3v4m6 1v4m-7 1v4"/></svg> 01 / INPUTS</span><h2>Build your collision</h2></div><button class="text-button" id="reset-button" type="button">Reset defaults</button></div>
         <p class="direction-note"><span aria-hidden="true">→ ←</span> Both speeds are toward the point of impact.</p>
         <div class="object-grid">
           <fieldset class="object-card"><legend><span class="object-index">A</span> Camel one <span class="motion-arrow" aria-hidden="true">→</span></legend>
@@ -47,10 +51,10 @@
       </div>
 
       <div class="results-panel" aria-labelledby="results-title">
-        <div class="results-top"><span class="section-kicker">02 / RESULTS</span><span class="live-badge"><span></span> LIVE ESTIMATE</span></div>
+        <div class="results-top"><span class="section-kicker"><svg class="utility-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3v14h14M6 12l4-4 3 2 4-6"/></svg> 02 / RESULTS</span><span class="live-badge"><span></span> LIVE ESTIMATE</span></div>
         <h2 id="results-title">The moment of impact</h2>
         <div class="collision-visual">
-          <div class="visual-track"><div class="moving-object"><span class="visual-label">CAMEL A</span><img class="camel-picture" src="camel.jpg" alt="Illustration of Camel A facing right" width="110" height="110"><span class="visual-velocity" id="visual-a">5.8 km/h →</span></div><div class="impact-symbol" aria-hidden="true">✳</div><div class="moving-object right"><span class="visual-label">CAMEL B</span><img class="camel-picture mirror" src="camel.jpg" alt="Illustration of Camel B facing left" width="110" height="110"><span class="visual-velocity" id="visual-b">← 5.3 km/h</span></div></div>
+          <div class="visual-track"><div class="moving-object"><span class="visual-label">CAMEL A</span><img class="camel-picture" src="camel.svg" alt="Line diagram of Camel A facing right" width="160" height="112"><span class="visual-velocity" id="visual-a">5.8 km/h →</span></div><div class="impact-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="m14 1 2 8 8-4-5 7 8 2-8 2 5 7-8-4-2 8-2-8-8 4 5-7-8-2 8-2-5-7 8 4z"/></svg></div><div class="moving-object right"><span class="visual-label">CAMEL B</span><img class="camel-picture mirror" src="camel.svg" alt="Line diagram of Camel B facing left" width="160" height="112"><span class="visual-velocity" id="visual-b">← 5.3 km/h</span></div></div>
           <div class="track-caption"><span>BEFORE IMPACT</span><span>HEAD-ON / ONE DIMENSION</span></div>
         </div>
         <div class="hero-result"><div><span class="result-label">AVERAGE CONTACT FORCE <button class="info" type="button" aria-label="Average contact force equals impulse divided by contact time" title="Impulse divided by contact time">i</button></span><div class="result-number"><output id="force-duration">—</output><span>N</span></div><p>On either camel, over the entered impact duration.</p></div><span class="hero-glyph" aria-hidden="true">↔</span></div>
@@ -74,7 +78,7 @@
       </div>
     </section>
 
-    <section class="detail-section wrap" aria-labelledby="details-title">
+    <section class="detail-section wrap" id="details" aria-labelledby="details-title">
       <div class="section-heading"><div><span class="section-kicker">03 / THE PHYSICS</span><h2 id="details-title">Inside the numbers</h2></div><p>One-dimensional, isolated collision model. Positive velocity points from camel A toward camel B.</p></div>
       <div class="metric-grid">
         <article class="metric net"><span class="metric-icon" aria-hidden="true">⇦ 0 ⇨</span><h3>Net final velocity · center of mass</h3><strong><output id="net-velocity">—</output> <small>km/h</small></strong><div class="net-axis"><span>− toward A</span><span>0 · impact point</span><span>+ toward B</span></div><p id="net-direction">—</p><p>The camels can have different final velocities; this number shows the signed motion of the whole system.</p></article>
@@ -97,6 +101,7 @@
 
     <aside class="disclaimer wrap" aria-label="Safety note"><p>This calculator treats camels as point masses in a straight-line collision. Real impacts involve body shape, rotation, uneven contact, changing force, and complex impression and elastic behavior. Default masses are not a universal camel average. Do not use these numbers to assess injury risk, design protective equipment, or make safety decisions. Always consult a professional engineer.</p></aside>
   </main>
-  <footer class="site-footer wrap"><div class="brand"><span class="brand-mark" aria-hidden="true">↔</span><span>Camel <strong>Collision Calculator</strong></span></div><div class="footer-links"><span>Sources:</span><a href="https://openstax.org/books/college-physics-2e/pages/8-5-inelastic-collisions-in-one-dimension" target="_blank" rel="noopener noreferrer">Collision physics ↗</a><a href="https://mechref.engr.illinois.edu/dyn/rec.html" target="_blank" rel="noopener noreferrer">Impulse &amp; restitution ↗</a><a href="https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b8" target="_blank" rel="noopener noreferrer">Force conversion ↗</a></div><span>Made for fun · Part of <a href="https://www.inwoodtech.com/" target="_blank" rel="noopener noreferrer">Inwood Tech</a></span></footer>
+  <section class="sources-section wrap" id="sources" aria-labelledby="sources-title"><div class="section-heading"><div><span class="section-kicker"><svg class="utility-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 2h9l3 3v13H4zM12 2v4h4M7 9h6M7 12h6M7 15h4"/></svg> 05 / SOURCES</span><h2 id="sources-title">References</h2></div></div><div class="source-links"><a href="https://openstax.org/books/college-physics-2e/pages/8-5-inelastic-collisions-in-one-dimension" target="_blank" rel="noopener noreferrer">OpenStax · Collision physics ↗</a><a href="https://mechref.engr.illinois.edu/dyn/rec.html" target="_blank" rel="noopener noreferrer">Illinois Mechanics Reference · Impulse &amp; restitution ↗</a><a href="https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b8" target="_blank" rel="noopener noreferrer">NIST · Force conversion ↗</a></div></section>
+  <footer class="wuw-footer wrap"><strong>Waypoint Utility Web</strong><span>Camel Collision Calculator · VERSION 2.01 · STATUS STABLE</span><span>Made for fun · Part of <a href="https://www.inwoodtech.com/" target="_blank" rel="noopener noreferrer">Inwood Tech</a></span></footer>
 </body>
 </html>
